@@ -23,6 +23,7 @@ export default function Grading() {
   const [term, setTerm] = useState("");
 
   const [roster, setRoster] = useState([]); // [{ register_no, name, grade }]
+  const [originalRoster, setOriginalRoster] = useState([]); // snapshot at load time, for diffing
   const [loadingRoster, setLoadingRoster] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -87,7 +88,10 @@ export default function Grading() {
     setError("");
     getGradeRoster(courseNo, term)
       .then((data) => {
-        if (!cancelled) setRoster(data || []);
+        if (!cancelled) {
+          setRoster(data || []);
+          setOriginalRoster(data || []);
+        }
       })
       .catch((err) => {
         if (!cancelled) handleApiError(err, navigate, setError);
@@ -144,11 +148,15 @@ export default function Grading() {
     setSaving(true);
     try {
       const gradesPayload = roster
-        .filter((r) => r.grade)
+        .filter((r) => {
+          if (!r.grade) return false;
+          const original = originalRoster.find((o) => o.register_no === r.register_no);
+          return !original || original.grade !== r.grade;
+        })
         .map((r) => ({ register_no: r.register_no, grade: r.grade }));
 
       if (gradesPayload.length === 0) {
-        setError("No grades entered to submit.");
+        setError("No grade changes to submit.");
         setSaving(false);
         return;
       }
@@ -159,9 +167,11 @@ export default function Grading() {
       setFailedRows(result.failed || []);
       setEmailFailures(result.email_failures || []);
 
-      // Refresh roster so the table reflects what actually got saved
+      // Refresh roster so the table reflects what actually got saved, and reset
+      // the diffing baseline so the next edit only picks up NEW changes.
       const refreshed = await getGradeRoster(courseNo, term);
       setRoster(refreshed || []);
+      setOriginalRoster(refreshed || []);
     } catch (err) {
       handleApiError(err, navigate, setError);
     } finally {
