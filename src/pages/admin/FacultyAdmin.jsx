@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FacultyForm from "../../pages/admin/FacultyForm";
 import FacultyTable from "../../pages/admin/FacultyTable";
+import SearchInput from "../../components/SearchInput";
 import { listFaculty, createFaculty, updateFaculty } from "../../api/faculty";
 import { handleApiError } from "../../utils/handleApiError";
 
@@ -11,6 +12,7 @@ export default function FacultyAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState(null); // null = create mode
   const [loadError, setLoadError] = useState("");
+  const [search, setSearch] = useState("");
 
   const loadFaculty = async () => {
     try {
@@ -85,7 +87,26 @@ export default function FacultyAdmin() {
 
       {loadError && <div className="alert alert-danger">{loadError}</div>}
 
-      <FacultyTable facultyList={facultyList} onModify={handleModifyClick} />
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by ID, name, department, designation..."
+      />
+
+      <FacultyTable
+        key={search}
+        facultyList={facultyList.filter((f) => {
+          const q = search.toLowerCase();
+          return (
+            f.faculty_id?.toLowerCase().includes(q) ||
+            f.name?.toLowerCase().includes(q) ||
+            f.department?.toLowerCase().includes(q) ||
+            f.designation?.toLowerCase().includes(q) ||
+            f.email?.toLowerCase().includes(q)
+          );
+        })}
+        onModify={handleModifyClick}
+      />
     </div>
   );
 }

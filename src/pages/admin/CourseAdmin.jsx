@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CourseForm from "../../pages/admin/CourseForm";
 import CourseTable from "../../pages/admin/CourseTable";
+import SearchInput from "../../components/SearchInput";
 import { listCourses, createCourse, updateCourse } from "../../api/course";
 import { handleApiError } from "../../utils/handleApiError";
 
@@ -10,6 +11,7 @@ const DEPARTMENT_OPTIONS = ["CSE", "IT", "MECH", "CIVIL"];
 export default function CourseAdmin() {
   const navigate = useNavigate();
   const [mode, setMode] = useState(null); // null | "create" | "modify" | "view"
+  const [search, setSearch] = useState("");
 
   // shared list of all courses, used to populate the "Modify" dropdown
   const [allCourses, setAllCourses] = useState([]);
@@ -179,10 +181,38 @@ export default function CourseAdmin() {
 
       {loadError && <div className="alert alert-danger">{loadError}</div>}
 
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by course no, name, department..."
+      />
+
       {mode === "view" ? (
-        <CourseTable courseList={viewResults} onModify={null} />
+        <CourseTable
+          key={search}
+          courseList={viewResults.filter((c) => {
+            const q = search.toLowerCase();
+            return (
+              c.course_no?.toLowerCase().includes(q) ||
+              c.course_name?.toLowerCase().includes(q) ||
+              c.department?.toLowerCase().includes(q)
+            );
+          })}
+          onModify={null}
+        />
       ) : (
-        <CourseTable courseList={allCourses} onModify={(course) => { setMode("modify"); setSelectedCourseNo(course.course_no); }} />
+        <CourseTable
+          key={search}
+          courseList={allCourses.filter((c) => {
+            const q = search.toLowerCase();
+            return (
+              c.course_no?.toLowerCase().includes(q) ||
+              c.course_name?.toLowerCase().includes(q) ||
+              c.department?.toLowerCase().includes(q)
+            );
+          })}
+          onModify={(course) => { setMode("modify"); setSelectedCourseNo(course.course_no); }}
+        />
       )}
     </div>
   );

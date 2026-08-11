@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StudentForm from "../../pages/admin/StudentForm";
 import StudentTable from "../../pages/admin/StudentTable";
+import SearchInput from "../../components/SearchInput";
 import { listStudents, createStudent, updateStudent } from "../../api/student";
 import { handleApiError } from "../../utils/handleApiError";
 
@@ -11,6 +12,7 @@ export default function StudentAdmin() {
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null); // null = create mode
   const [loadError, setLoadError] = useState("");
+  const [search, setSearch] = useState("");
 
   const loadStudents = async () => {
     try {
@@ -85,7 +87,26 @@ export default function StudentAdmin() {
 
       {loadError && <div className="alert alert-danger">{loadError}</div>}
 
-      <StudentTable studentList={studentList} onModify={handleModifyClick} />
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by register no, name, department, degree..."
+      />
+
+      <StudentTable
+        key={search}
+        studentList={studentList.filter((s) => {
+          const q = search.toLowerCase();
+          return (
+            s.register_no?.toLowerCase().includes(q) ||
+            s.name?.toLowerCase().includes(q) ||
+            s.department?.toLowerCase().includes(q) ||
+            s.degree?.toLowerCase().includes(q) ||
+            s.email?.toLowerCase().includes(q)
+          );
+        })}
+        onModify={handleModifyClick}
+      />
     </div>
   );
 }
