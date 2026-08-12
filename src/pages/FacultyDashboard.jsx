@@ -4,6 +4,7 @@ import SectionNav from "../components/SectionNav";
 import FacultyProfile from "./faculty/sections/FacultyProfile";
 import TeachingHistory from "./faculty/sections/TeachingHistory";
 import CurrentSemester from "./faculty/sections/CurrentSemester";
+import EmailLog from "./faculty/sections/EmailLog";
 import Grading from "./faculty/sections/Grading";
 
 const sections = [
@@ -11,6 +12,7 @@ const sections = [
   { key: "history", label: "Teaching History" },
   { key: "current", label: "Current Semester" },
   { key: "grading", label: "Grading" },
+  { key: "emaillog", label: "Email Log" }
 ];
 
 const sectionComponents = {
@@ -18,6 +20,7 @@ const sectionComponents = {
   history: TeachingHistory,
   current: CurrentSemester,
   grading: Grading,
+  emaillog: EmailLog
 };
 
 export default function FacultyDashboard() {
